@@ -1,4 +1,4 @@
-# Understanding Open Table Formats: Step-by-Step Guide to Data Representation and File Deletion
+# Understanding Open Table Formats Data Representation and File Deletion
 
 
 
