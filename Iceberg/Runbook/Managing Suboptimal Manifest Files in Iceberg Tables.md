@@ -51,6 +51,11 @@ After identifying this performance bottleneck, the decision is made to rewrite t
 
 The subsequent execution of the same sales analysis query reveals a marked improvement in response time, as the system can efficiently prune irrelevant partitions and execute the query plan with minimal overhead.
 
+
+
 ### Conclusion
 
 By actively managing suboptimal manifest files through systematic rewriting, you can significantly enhance the performance of Iceberg tables. This proactive approach not only improves query planning time and partition pruning efficiency but also optimizes the overall data structure for better system performance. Regularly monitoring manifest file health is essential to maintaining operational efficiency and ensuring that querying processes continue to meet user demands in a timely manner.
+
+### Reference
+[AmbariCloud](https://docs.google.com/document/d/13anWzzMl6IS6kxpIeX0wfXc-dEhBPHcX0CDBStaSevQ/edit?tab=t.0#heading=h.ndzgzqr77fuh)
