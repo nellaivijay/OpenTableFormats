@@ -9,6 +9,64 @@ As snapshots accumulate within Apache Iceberg tables, they can reference a growi
 
 2. **Inefficient Partition Pruning**:
    - Partition pruning is a technique whereby the query execution engine skips partitions that don’t need to be scanned based on the query filters. For effective pruning to occur, manifest files must be well-organized and properly aligned with partition boundaries. If the manifests are poorly organized or there are too many of them, the ability to efficiently exclude irrelevant partitions is compromised, resulting in longer query runtimes and increased resource consumption.
+  ##### Example Dataset
+Let’s assume you have the following partition structure for a sales dataset:
+- Table: `sales`
+- Partitioning: `year` (2020, 2021) and `month` (January, February)
+
+   ##### Inspect the Table Schema and Partitioning
+   You can use Iceberg's API to retrieve the schema and partitioning information.
+
+```sql
+DESCRIBE FORMATTED sales;
+```
+
+This command will show you the table's schema, including partition information. You should look for:
+- The data types of your columns.
+- The partition columns and their types.
+
+   ##### Analyze the Manifest Files
+   Iceberg uses manifest files to keep track of the data files for each partition. To understand the distribution of these files, check for manifest files in the metadata location (typically, a specific path in your data storage).
+
+```bash
+# For example, list manifest files
+ls path/to/iceberg/sales/metadata
+```
+
+You should see files with names like `snap-xxxx.mf`, representing different snapshots of your table.
+
+   ##### Read and Analyze Manifest Contents
+To analyze the contents of the manifest files, you can use the Iceberg API or any compatible query engine (like Spark). Using Spark, you can do the following:
+
+```python
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+
+# Initialize Spark session
+spark = SparkSession.builder \
+    .appName("Iceberg Analysis") \
+    .config("spark.sql.catalog.spark_catalog", "org.apache.iceberg.spark.SparkCatalog") \
+    .config("spark.sql.catalog.spark_catalog.type", "hive") \
+    .getOrCreate()
+
+# Load the table
+sales_table = spark.read.format("iceberg").load("path/to/iceberg/sales")
+
+# Analyze partitions
+sales_table.groupBy("year", "month").count().show()
+```
+
+This will give you a count of records in each partition, helping you understand the distribution of your data.
+
+   ##### Investigate Data Skew
+Look for partitions with significantly more data than others. This could lead to performance issues. If you notice that the January 2021 partition has a much higher count than February 2021, this indicates data skew.
+
+   ##### Optimize Your Table
+If you identify partitions that are heavily skewed, consider re-partitioning your dataset. For example, instead of just partitioning by `year` and `month`, you may also partition by an additional column like `region` to balance the data better.
+
+   ##### Monitor and Maintain
+Continue to monitor your partition structure and make adjustments as necessary. Iceberg allows you to manage snapshots and perform actions like compacting files or re-partitioning.
+   
 
 3. **Increased Metadata Query Overhead**:
    - Metadata operations, which may include retrieving table schemas, listing data files, or checking the status of snapshot transactions, also become sluggish when processing numerous or disorganized manifest files. As these operations are critical for maintaining data integrity and supporting efficient querying, any slowdown can ripple through the system, negatively impacting the performance of even basic operations.
